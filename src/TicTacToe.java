@@ -4,10 +4,20 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Interface for human and AI move on tictactoe board. Player attributes when defined in class
+ *  {@link TicTacToe} use interface object as the move.
+ *
+ *  Note : This game is hardcoded for 3*3 tic tac toe board.
+ *
+ *  Time Complexity : O(n^2)
+ */
 interface MoveMethod {
     int move();
 }
 
+/**
+ * Generate AI move on tictactoe board.
+ */
 class SimpleMoveStrategy implements MoveMethod {
     private TicTacToe game;
 
@@ -15,6 +25,17 @@ class SimpleMoveStrategy implements MoveMethod {
         game = t;
     }
 
+    // although override is not necessarily required, it is better to be explicit rather than
+    // implicit
+
+    /**
+     * AI move fills the first block it finds empty in the ticktactoe matrix.
+     *
+     * Time Complexity : O(n^2)
+     *
+     * @return coordinate(number when started from top left to bottom right) of the tictactoe
+     * matrix to fill. If all moves are filled, return 0.
+     */
     public int move() {
         for (int i = 0; i < TicTacToe.N; i++) {
             for (int j = 0; j < TicTacToe.N; j++) {
@@ -26,6 +47,9 @@ class SimpleMoveStrategy implements MoveMethod {
     }
 }
 
+/**
+ * Takes human move coordinate for the tictactoe matrix, and apply it.
+ */
 class HumanMove implements MoveMethod {
     private TicTacToe game;
 
@@ -33,11 +57,23 @@ class HumanMove implements MoveMethod {
         game = t;
     }
 
-    public int move() {
+    // although override is not necessarily required, it is better to be explicit rather than
+    // implicit
 
+    /**
+     * Takes input from human when it is human turn in the game. Check if the move is
+     * valid, return the move coordinate(number when started from top left to bottom right), if
+     * input is invalid request user to submit valid input.
+     *
+     * @return coordinate(number when started from top left to bottom right) of the tictactoe
+     * matrix to fill.
+     */
+    public int move() {
         String move_str;
+
         int move_int = 0;
         boolean valid_input = false;
+
         while (!valid_input) {
             System.out.print("Where to ? ");
             move_str = TicTacToe.getUserInput();
@@ -51,6 +87,7 @@ class HumanMove implements MoveMethod {
             }
 
             if (!valid_input) {
+                // We should provide more details on what are valid inputs.
                 System.out.println("Invalid input");
                 continue;
             }
@@ -60,16 +97,26 @@ class HumanMove implements MoveMethod {
 
 }
 
+/**
+ * Runs the tic tac game between human and AI.
+ */
 class TicTacToe {
+    /** Dimension of the game. We can move the dimension to inside the constructor to define the
+     * game size. */
     protected static final int N = 3;
 
+    /** Space between current board showing moves played with the allowed moves number to
+     * input when requesting human to submit move. */
     private static final int HSPACE = 20;
 
+    /** TicTacToe board. Moves will be submitted and checked in here. */
     protected int[][] board;
 
+    /** Taking user input. */
     private static BufferedReader reader =
             new BufferedReader(new InputStreamReader(System.in));
 
+    /** Defining two players that are playing game, human and AI. */
     class Player {
         private String name;
 
@@ -87,14 +134,17 @@ class TicTacToe {
             move_strategy = move_s;
         }
 
+        /** Get player name. */
         public String getName() {
             return name;
         }
 
+        /** Get player type. Human or AI. */
         public int getPlayerType() {
             return player_type;
         }
 
+        /** Get next move from the player. */
         public int getMove() {
             return move_strategy.move();
         }
@@ -102,14 +152,17 @@ class TicTacToe {
 
     private Player player1, player2;
 
+    /** Get player 1 POJO. */
     public Player getplayer1() {
         return player1;
     }
 
+    /** Get player 2 POJO. */
     public Player getplayer2() {
         return player2;
     }
 
+    /** Provide the position location played for a 3*3 tic tac toe board. */
     public static String getPosDescription(int pos) {
         String str = "";
         if (pos == 5) {
@@ -134,6 +187,8 @@ class TicTacToe {
         return str;
     }
 
+    // Not sure if protected was required. Could have been package-private.
+    /** Get the user input. */
     protected static String getUserInput() {
         String input = "";
         try {
@@ -144,6 +199,9 @@ class TicTacToe {
         return input;
     }
 
+    // Class is not public. Constructor shouldn't be as well.
+    /** Initializes board with 0 as values for each coordinate. 0 means no value input in that
+     * coordinate. Initializes both human and AI player. */
     public TicTacToe() {
         board = new int[N][N];
         for (int i = 0; i < N; i++) {
@@ -160,6 +218,8 @@ class TicTacToe {
                 " vs Computer Player" + player2.getName() + ":");
     }
 
+    /** Set move played. Mark it by the player type. Get the number for the coordiante, and
+     * deduce its position in the board and mark that location with player insignia. */
     public boolean setMove(int move, int p_type) {
         int x_coord = (move - 1) / 3;
         int y_coord = (move - 1) % 3;
@@ -173,10 +233,18 @@ class TicTacToe {
         }
     }
 
+    /** Enum defining possible outcome for the game. */
     private enum WinConfig {
         DRAW, WIN, NONE
     }
 
+    /** Deduce after each turn what is the status of the game. Check if any row, column, or
+     * diagonal is fileld by a single user. IF so, submit the game is won by that user. If not,
+     * then check if all boxes are filled. If so, send the draw message, otherwise none, which
+     * means game should continue.
+     *
+     * Time Complexity : O(n)
+     * */
     private WinConfig isWinningConfig() {
         WinConfig w = WinConfig.WIN;
         // rows
@@ -215,6 +283,10 @@ class TicTacToe {
 
     }
 
+    /** Define the mark for the player, when showing the board while input. Human get "X", AI get
+     * "O".
+     * Actually, the board is filled with player type internally (1 for AI, 2 for Human).
+     * To display how the game is commonly played we use "x" and "O". */
     private String getRowString(int row) {
         String s = "";
         for (int i = 0; i < N; i++) {
@@ -248,6 +320,10 @@ class TicTacToe {
         return s;
     }
 
+    /** Display the board when requesting human to submit their move.
+     *
+     * @return the board map
+     * */
     public String toString() {
         String s = "";
         // iterate through the rows
@@ -261,6 +337,7 @@ class TicTacToe {
         System.out.println("Welcome to Tic-Tac-Toe.");
         System.out.println("");
 
+        // Initializes the game. Sets up the board.
         TicTacToe game = new TicTacToe();
         String move_str;
         int move1 = 0;
@@ -274,6 +351,14 @@ class TicTacToe {
         System.out.println(game.toString());
 
         while (game.isWinningConfig() == WinConfig.NONE) {
+            // first ask the human to play a move.
+            // We are already checking for valid move in the human move class, but that doesn't
+            // check if the new move made is the one that has already been submitted.
+            // We use do-while here, because we set move1 as 0 by default, which is invalid, and we
+            // need a valid move
+            // made by user to continue the game. WE use while, as we need a valid input from
+            // the user, so until the user submit a valid move, we keep on asking for the valid
+            // move.
             do {
                 move1 = game.getplayer1().getMove();
             } while (!game.setMove(move1, game.getplayer1().getPlayerType()));
@@ -284,6 +369,7 @@ class TicTacToe {
                 System.out.println("You have beaten my poor AI!");
                 break;
             } else if (w == WinConfig.DRAW) {
+                // We could have used new line at end of each print instead of calling these empty
                 System.out.println("");
                 System.out.println(game.toString());
                 System.out.println("Well played. It is a draw!");
@@ -299,6 +385,10 @@ class TicTacToe {
 
             game.setMove(move2, game.getplayer2().getPlayerType());
 
+            // we have only checked for win here and not draw game for AI, as the last move
+            // would always be played by human, as first is played by human as well. And we
+            // cannot confirm as per the logic defined for the game, if game has a result until
+            // all moves are played.
             if (game.isWinningConfig() == WinConfig.WIN) {
                 System.out.println("");
                 System.out.println(game.toString());
